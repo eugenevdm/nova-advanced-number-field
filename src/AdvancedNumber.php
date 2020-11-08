@@ -45,6 +45,18 @@ class AdvancedNumber extends Number
     private $suffix = '';
 
     /**
+     * A true false indicator that determines if the output should be rounded to bytes major units.
+     *
+     * @var string
+     */
+    private $bytes = false;
+
+    /**
+     * A list of suffixes used for bytes output.
+     */
+    private $byteUnits = ['B', 'KiB', 'MiB', 'GiB', 'TiB'];
+
+    /**
      * Create a new field.
      *
      * @param  string       $name
@@ -58,10 +70,16 @@ class AdvancedNumber extends Number
         parent::__construct($name, $attribute, $resolveCallback);
 
         $this->decimals($this->decimals)
-             ->textAlign('right')
-             ->displayUsing(function ($value) {
-                 return ! is_null($value) ? $this->prefix . number_format($value, $this->decimals, $this->dec_point, $this->thousands_sep) . $this->suffix : null;
-             });
+            ->textAlign('right')
+            ->displayUsing(function ($value) {
+                return
+                    !is_null($value)
+                    ? $this->prefix
+                    . number_format($this->bytes == false
+                        ? $value
+                        : $this->formatBytes($value), $this->decimals, $this->dec_point, $this->thousands_sep) . $this->suffix
+                    : null;
+            });
     }
 
     /**
@@ -134,5 +152,35 @@ class AdvancedNumber extends Number
         $this->thousands_sep = $thousands_sep;
 
         return $this;
+    }
+    
+    /**
+     * A method when called sets bytes output to true.
+     * 
+     * @return $this
+     */
+    public function bytes()
+    {
+        $this->bytes = true;
+
+        return $this;
+    }
+
+    /**
+     * Convert a byte to a byte major unit.
+     * 
+     * @return $this
+     */
+    protected function formatBytes($bytes)
+    {
+        $bytes = max($bytes, 0);
+        $pow = floor(($bytes ? log($bytes) : 0) / log(1024));
+        $pow = min($pow, count($this->byteUnits) - 1);
+
+        $bytes /= (1 << (10 * $pow));
+
+        $this->suffix = ' ' . $this->byteUnits[$pow];
+
+        return $bytes;
     }
 }

@@ -27,3 +27,7 @@ All notable changes to `nova-advanced-number-field` will be documented in this f
 ## 1.1.1 - 2019-11-01
 
 - Fix minimum Nova version.
+
+## 2.0.1 - 2020-11-08
+
+- Add bytes() processing.
